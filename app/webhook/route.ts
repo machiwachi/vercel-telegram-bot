@@ -43,12 +43,10 @@ export async function POST(req: NextRequest) {
     ) {
       const projectName = payload.name;
       const deploymentUrl = payload.url;
-      const deploymentId = payload.deployment.id;
       const commitAuthor =
         payload.deployment.meta?.githubCommitAuthorName || "N/A";
       const commitMessage =
         payload.deployment.meta?.githubCommitMessage || "N/A";
-      const commitSha = payload.deployment.meta?.githubCommitSha || "N/A";
       const deploymentStatus = type.split(".")[1]; // created, succeeded, failed
 
       if (payload.target !== "production") {
