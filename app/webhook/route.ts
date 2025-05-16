@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import axios from "axios";
 
 export async function POST(req: NextRequest) {
   try {
@@ -71,17 +70,27 @@ export async function POST(req: NextRequest) {
       };
 
       try {
-        const telegramResponse = await axios.post(
-          telegramApiUrl,
-          telegramParams
-        );
-        console.log("Telegram message sent:", telegramResponse.data);
+        const telegramResponse = await fetch(telegramApiUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(telegramParams),
+        });
+
+        if (!telegramResponse.ok) {
+          const errorData = await telegramResponse.json();
+          console.error("Error sending Telegram message:", errorData);
+          return new NextResponse("Error sending Telegram notification", {
+            status: telegramResponse.status,
+          });
+        }
+
+        const responseData = await telegramResponse.json();
+        console.log("Telegram message sent:", responseData);
         return new NextResponse("Telegram notification sent", { status: 200 });
       } catch (error: any) {
-        console.error(
-          "Error sending Telegram message:",
-          error.response ? error.response.data : error.message
-        );
+        console.error("Error sending Telegram message:", error.message);
         return new NextResponse("Error sending Telegram notification", {
           status: 500,
         });
