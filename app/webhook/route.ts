@@ -89,8 +89,11 @@ export async function POST(req: NextRequest) {
         const responseData = await telegramResponse.json();
         console.log("Telegram message sent:", responseData);
         return new NextResponse("Telegram notification sent", { status: 200 });
-      } catch (error: any) {
-        console.error("Error sending Telegram message:", error.message);
+      } catch (error: unknown) {
+        console.error(
+          "Error sending Telegram message:",
+          error instanceof Error ? error.message : String(error)
+        );
         return new NextResponse("Error sending Telegram notification", {
           status: 500,
         });
