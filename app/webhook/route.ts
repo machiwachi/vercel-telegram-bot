@@ -1,5 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 
+// Helper function to escape Markdown special characters
+function escapeMarkdown(text: string): string {
+  if (!text) return "";
+  return text
+    .replace(/\_/g, "\\_") // Escape existing escapes of underscore first
+    .replace(/\*/g, "\\*") // Escape existing escapes of asterisk
+    .replace(/\`/g, "\\`") // Escape existing escapes of backtick
+    .replace(/\[/g, "\\[") // Escape existing escapes of open bracket
+    .replace(/_/g, "\\_")
+    .replace(/\*/g, "\\*")
+    .replace(/`/g, "\\`")
+    .replace(/\[/g, "\\[");
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
@@ -37,17 +51,25 @@ export async function POST(req: NextRequest) {
       const commitSha = payload.deployment.meta?.githubCommitSha || "N/A";
       const deploymentStatus = type.split(".")[1]; // created, succeeded, failed
 
-      let telegramMessage = `📢 Vercel Deployment Update (${deploymentStatus.toUpperCase()})\n\n`;
-      telegramMessage += `**Project:** ${projectName}\n`;
-      telegramMessage += `**Deployment URL:** ${deploymentUrl}\n`;
-      telegramMessage += `**Deployment ID:** ${deploymentId}\n`;
-      telegramMessage += `**Commit Author:** ${commitAuthor}\n`;
-      telegramMessage += `**Commit Message:** ${commitMessage}\n`;
-      telegramMessage += `**Commit SHA:** ${commitSha}\n`;
-      telegramMessage += `**Timestamp (UTC):** ${new Date(
-        body.createdAt
-      ).toISOString()}\n`;
-      telegramMessage += `**Environment:** ${payload.target}\n`;
+      let telegramMessage = `📢 Vercel Deployment Update (${escapeMarkdown(
+        deploymentStatus.toUpperCase()
+      )})\n\n`;
+      telegramMessage += `**Project:** ${escapeMarkdown(projectName)}\n`;
+      telegramMessage += `**Deployment URL:** ${escapeMarkdown(
+        deploymentUrl
+      )}\n`;
+      telegramMessage += `**Deployment ID:** ${escapeMarkdown(deploymentId)}\n`;
+      telegramMessage += `**Commit Author:** ${escapeMarkdown(commitAuthor)}\n`;
+      telegramMessage += `**Commit Message:** ${escapeMarkdown(
+        commitMessage
+      )}\n`;
+      telegramMessage += `**Commit SHA:** ${escapeMarkdown(commitSha)}\n`;
+      telegramMessage += `**Timestamp (UTC):** ${escapeMarkdown(
+        new Date(body.createdAt).toISOString()
+      )}\n`;
+      telegramMessage += `**Environment:** ${escapeMarkdown(
+        payload.target || "N/A"
+      )}\n`;
 
       // 3. Send the Formatted Message to Telegram
       const telegramBotToken = process.env.TELEGRAM_BOT_TOKEN;
