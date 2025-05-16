@@ -51,6 +51,10 @@ export async function POST(req: NextRequest) {
       const commitSha = payload.deployment.meta?.githubCommitSha || "N/A";
       const deploymentStatus = type.split(".")[1]; // created, succeeded, failed
 
+      if (payload.target !== "production") {
+        return new NextResponse("Not a production deployment", { status: 200 });
+      }
+
       let telegramMessage = `📢 Vercel Deployment Update (${escapeMarkdown(
         deploymentStatus.toUpperCase()
       )})\n\n`;
@@ -58,12 +62,10 @@ export async function POST(req: NextRequest) {
       telegramMessage += `**Deployment URL:** ${escapeMarkdown(
         deploymentUrl
       )}\n`;
-      telegramMessage += `**Deployment ID:** ${escapeMarkdown(deploymentId)}\n`;
       telegramMessage += `**Commit Author:** ${escapeMarkdown(commitAuthor)}\n`;
-      telegramMessage += `**Commit Message:** ${escapeMarkdown(
+      telegramMessage += `**Commit Message:**\n ${escapeMarkdown(
         commitMessage
       )}\n`;
-      telegramMessage += `**Commit SHA:** ${escapeMarkdown(commitSha)}\n`;
       telegramMessage += `**Timestamp (UTC):** ${escapeMarkdown(
         new Date(body.createdAt).toISOString()
       )}\n`;
